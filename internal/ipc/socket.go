@@ -16,7 +16,7 @@ func (b *Broker) StartDashboardServer(ctx context.Context, runID string, port in
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status":"ok"}`))
+		_, _ = w.Write([]byte(`{"status":"ok"}`))
 	})
 
 	mux.HandleFunc("/events", func(w http.ResponseWriter, r *http.Request) {
@@ -33,11 +33,14 @@ func (b *Broker) StartDashboardServer(ctx context.Context, runID string, port in
 
 	go func() {
 		<-ctx.Done()
-		srv.Shutdown(context.Background())
+		_ = srv.Shutdown(context.Background())
 	}()
 
 	go func() {
-		srv.ListenAndServe()
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			// Log error but don't block - server runs in background
+			fmt.Printf("dashboard server error: %v\n", err)
+		}
 	}()
 
 	return nil

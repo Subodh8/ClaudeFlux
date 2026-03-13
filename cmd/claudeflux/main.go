@@ -136,18 +136,6 @@ func buildLogger(level string) (*zap.Logger, error) {
 	return cfg.Build()
 }
 
-var errNotImplemented = fmt.Errorf("not yet implemented — see the roadmap at https://github.com/Subodh8/ClaudeFlux")
-
-func stubCmd(use, short string) *cobra.Command {
-	return &cobra.Command{
-		Use:   use,
-		Short: short,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return errNotImplemented
-		},
-	}
-}
-
 func resumeCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "resume <run-id>",

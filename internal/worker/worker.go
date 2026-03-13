@@ -25,9 +25,17 @@ type Result struct {
 	ExitCode   int
 }
 
+// GetTokensUsed returns the token count for store persistence.
+func (r *Result) GetTokensUsed() int64 { return r.TokensUsed }
+
+// GetCostUSD returns the cost for store persistence.
+func (r *Result) GetCostUSD() float64 { return r.CostUSD }
+
+// GetOutput returns the output for store persistence.
+func (r *Result) GetOutput() string { return r.Output }
+
 type Worker struct {
-	cfg      Config
-	worktree *Worktree
+	cfg Config
 }
 
 func NewWorker(cfg Config) *Worker {

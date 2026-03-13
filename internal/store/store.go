@@ -73,10 +73,28 @@ func (s *Store) FailAgentRun(runID, name, errMsg string) error {
 }
 
 func (s *Store) CompleteAgentRun(runID, name string, result any) error {
+	// Extract token/cost info if result is a worker.Result
+	type resultInfo interface {
+		GetTokensUsed() int64
+		GetCostUSD() float64
+		GetOutput() string
+	}
+
+	var tokens int64
+	var cost float64
+	var output string
+
+	if r, ok := result.(resultInfo); ok {
+		tokens = r.GetTokensUsed()
+		cost = r.GetCostUSD()
+		output = r.GetOutput()
+	}
+
 	_, err := s.db.Exec(
-		`UPDATE agent_runs SET status='complete', ended_at=CURRENT_TIMESTAMP
+		`UPDATE agent_runs SET status='complete', ended_at=CURRENT_TIMESTAMP,
+		 tokens_used=?, cost_usd=?, output=?
 		 WHERE run_id=? AND agent_name=?`,
-		runID, name,
+		tokens, cost, output, runID, name,
 	)
 	return err
 }
