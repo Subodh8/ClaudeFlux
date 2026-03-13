@@ -48,7 +48,7 @@ changelog:
 brews:
   - repository:
       owner: Subodh8
-      name: homebrew-ClaudeFlux
+      name: homebrew-claudeflux
     homepage: "https://github.com/Subodh8/ClaudeFlux"
     description: "Production-grade multi-agent orchestration runtime for Claude"
     license: "Apache-2.0"

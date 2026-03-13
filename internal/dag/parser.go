@@ -38,9 +38,11 @@ func Build(agents map[string]config.AgentConfig) (*DAG, error) {
 // TopologicalLayers returns agents grouped by execution layer.
 // Agents in the same layer can execute in parallel.
 // Layer 0 has no dependencies, layer 1 depends only on layer 0, etc.
+// Returns an empty slice (not nil) for a valid empty DAG.
+// Returns nil only if a cycle is detected.
 func (d *DAG) TopologicalLayers() [][]string {
 	if len(d.nodes) == 0 {
-		return nil
+		return [][]string{} // Valid empty DAG — distinct from cycle (nil)
 	}
 
 	// Build in-degree map and adjacency list
@@ -69,7 +71,7 @@ func (d *DAG) TopologicalLayers() [][]string {
 		}
 
 		if len(layer) == 0 {
-			return nil // Cycle detected — should not happen in a valid DAG
+			return nil // Cycle detected
 		}
 
 		layers = append(layers, layer)
@@ -88,6 +90,14 @@ func (d *DAG) TopologicalLayers() [][]string {
 	return layers
 }
 
+// hasCycle returns true if the DAG contains a cycle.
+func (d *DAG) hasCycle() bool {
+	if len(d.nodes) == 0 {
+		return false
+	}
+	return d.TopologicalLayers() == nil
+}
+
 // Validate checks the DAG for cycles and missing dependencies.
 func (d *DAG) Validate() error {
 	// Check for missing dependencies
@@ -99,9 +109,8 @@ func (d *DAG) Validate() error {
 		}
 	}
 
-	// Check for cycles using topological sort
-	layers := d.TopologicalLayers()
-	if layers == nil && len(d.nodes) > 0 {
+	// Check for cycles
+	if d.hasCycle() {
 		return fmt.Errorf("cycle detected in agent dependency graph")
 	}
 
