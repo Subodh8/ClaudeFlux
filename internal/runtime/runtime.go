@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"sync"
 	"time"
- 
+
 	"github.com/google/uuid"
+	"go.uber.org/zap"
+
 	"github.com/Subodh8/ClaudeFlux/internal/budget"
 	"github.com/Subodh8/ClaudeFlux/internal/config"
 	"github.com/Subodh8/ClaudeFlux/internal/coordinator"
@@ -14,7 +16,6 @@ import (
 	"github.com/Subodh8/ClaudeFlux/internal/ipc"
 	"github.com/Subodh8/ClaudeFlux/internal/store"
 	"github.com/Subodh8/ClaudeFlux/internal/worker"
-	"go.uber.org/zap"
 )
  
 // Options configures the ClaudeFlux runtime.

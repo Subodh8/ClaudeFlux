@@ -6,12 +6,13 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
- 
+
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
+
 	"github.com/Subodh8/ClaudeFlux/internal/config"
 	"github.com/Subodh8/ClaudeFlux/internal/runtime"
 	"github.com/Subodh8/ClaudeFlux/internal/store"
-	"go.uber.org/zap"
 )
  
 var version = "dev" // injected by goreleaser

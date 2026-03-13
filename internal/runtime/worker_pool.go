@@ -3,11 +3,12 @@ package runtime
 import (
 	"context"
 
+	"go.uber.org/zap"
+
 	"github.com/Subodh8/ClaudeFlux/internal/budget"
 	"github.com/Subodh8/ClaudeFlux/internal/coordinator"
 	"github.com/Subodh8/ClaudeFlux/internal/ipc"
 	"github.com/Subodh8/ClaudeFlux/internal/worker"
-	"go.uber.org/zap"
 )
 
 // WorkerPoolOptions configures the worker pool.
