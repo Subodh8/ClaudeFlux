@@ -8,9 +8,9 @@ import (
 	"syscall"
  
 	"github.com/spf13/cobra"
-	"github.com/yourusername/claudeflux/internal/config"
-	"github.com/yourusername/claudeflux/internal/runtime"
-	"github.com/yourusername/claudeflux/internal/store"
+	"github.com/Subodh8/ClaudeFlux/internal/config"
+	"github.com/Subodh8/ClaudeFlux/internal/runtime"
+	"github.com/Subodh8/ClaudeFlux/internal/store"
 	"go.uber.org/zap"
 )
  

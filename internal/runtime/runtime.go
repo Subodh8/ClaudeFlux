@@ -7,13 +7,13 @@ import (
 	"time"
  
 	"github.com/google/uuid"
-	"github.com/yourusername/claudeflux/internal/budget"
-	"github.com/yourusername/claudeflux/internal/config"
-	"github.com/yourusername/claudeflux/internal/coordinator"
-	"github.com/yourusername/claudeflux/internal/dag"
-	"github.com/yourusername/claudeflux/internal/ipc"
-	"github.com/yourusername/claudeflux/internal/store"
-	"github.com/yourusername/claudeflux/internal/worker"
+	"github.com/Subodh8/ClaudeFlux/internal/budget"
+	"github.com/Subodh8/ClaudeFlux/internal/config"
+	"github.com/Subodh8/ClaudeFlux/internal/coordinator"
+	"github.com/Subodh8/ClaudeFlux/internal/dag"
+	"github.com/Subodh8/ClaudeFlux/internal/ipc"
+	"github.com/Subodh8/ClaudeFlux/internal/store"
+	"github.com/Subodh8/ClaudeFlux/internal/worker"
 	"go.uber.org/zap"
 )
  
@@ -72,7 +72,12 @@ func New(opts Options) (*Runtime, error) {
 		return nil, fmt.Errorf("dag build: %w", err)
 	}
  
-	budgetTracker := budget.New(opts.Config.Budget)
+	budgetTracker := budget.New(budget.Config{
+		MaxTokens:      opts.Config.Budget.MaxTokens,
+		MaxCostUSD:     opts.Config.Budget.MaxCostUSD,
+		AlertAtPercent: opts.Config.Budget.AlertAtPercent,
+		OnExceeded:     opts.Config.Budget.OnExceeded,
+	})
 	broker := ipc.NewBroker()
  
 	coord, err := coordinator.New(coordinator.Options{
