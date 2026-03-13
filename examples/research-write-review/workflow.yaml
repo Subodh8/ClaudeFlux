@@ -1,0 +1,156 @@
+# ClaudeFlux Example: Research → Write → Review → Steward Pipeline
+# Run with: claudeflux run workflow.yaml --dashboard
+ 
+version: "1"
+name: research-write-review
+description: >
+  Five-agent pipeline that researches a topic, writes a technical article,
+  runs adversarial review, revises, then commits via the steward.
+ 
+git:
+  base_branch: main
+  worktree_prefix: cf-
+ 
+budget:
+  max_tokens: 150000
+  max_cost_usd: 3.00
+  alert_at_percent: 80
+  on_exceeded: checkpoint
+ 
+contracts:
+  research_report:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    required: [topic, sources, findings, summary]
+    properties:
+      topic:
+        type: string
+      sources:
+        type: array
+        items:
+          type: object
+          required: [title, url, credibility_score]
+          properties:
+            title: { type: string }
+            url: { type: string }
+            credibility_score: { type: number, minimum: 0, maximum: 10 }
+      findings:
+        type: array
+        items: { type: string }
+      summary:
+        type: string
+        minLength: 100
+ 
+  review_result:
+    $schema: "http://json-schema.org/draft-07/schema#"
+    type: object
+    required: [score, approved, issues]
+    properties:
+      score: { type: number, minimum: 0, maximum: 10 }
+      approved: { type: boolean }
+      issues:
+        type: array
+        items:
+          type: object
+          required: [severity, description]
+          properties:
+            severity: { type: string, enum: [critical, major, minor] }
+            description: { type: string }
+ 
+agents:
+  researcher:
+    type: worker
+    prompt: |
+      You are a senior technical researcher. Your task:
+ 
+      1. Research the topic: "State of open-source vector databases in 2025"
+      2. Identify the top 5 vector databases (Qdrant, Weaviate, Milvus, pgvector, Chroma)
+      3. For each, gather: license, key features, performance benchmarks, best-fit use case
+      4. Assess source credibility on a 0-10 scale
+      5. Write your findings to: research_output.json
+ 
+      Output MUST be valid JSON matching the research_report contract.
+    budget:
+      max_tokens: 40000
+      max_cost_usd: 0.80
+    timeout: 600
+    contract:
+      output: research_report
+ 
+  writer:
+    type: worker
+    depends_on: [researcher]
+    prompt: |
+      You are a senior technical writer targeting principal engineers.
+ 
+      1. Read research_output.json
+      2. Write a 2000-word technical comparison article
+      3. Structure: intro → feature comparison table → deep dives → recommendation matrix
+      4. Tone: direct, opinionated, evidence-based. No fluff.
+      5. Save article to: article.md
+    budget:
+      max_tokens: 50000
+      max_cost_usd: 1.00
+    timeout: 900
+    retry:
+      max_attempts: 2
+      backoff: linear
+ 
+  critic:
+    type: critic
+    depends_on: [writer]
+    targets: [writer]
+    prompt: |
+      You are a harsh but fair technical editor.
+ 
+      Read article.md and evaluate:
+      1. Factual accuracy (cross-reference against research_output.json)
+      2. Technical depth — are claims substantiated?
+      3. Logical consistency
+      4. Missing perspectives
+      5. Credibility risks
+ 
+      Output strict JSON review to: critic_review.json
+    budget:
+      max_tokens: 30000
+      max_cost_usd: 0.60
+    contract:
+      output: review_result
+ 
+  revisor:
+    type: worker
+    depends_on: [critic]
+    prompt: |
+      You are the original writer. Read:
+      - article.md (your original draft)
+      - critic_review.json (adversarial review)
+ 
+      Address every issue with severity "critical" or "major".
+      For each change, add a comment <!-- CF-REVISION: <reason> --> inline.
+      Save revised article to: article_final.md
+      Save revision log to: revision_log.json
+    budget:
+      max_tokens: 40000
+      max_cost_usd: 0.80
+    retry:
+      max_attempts: 2
+      backoff: linear
+ 
+  steward:
+    type: steward
+    depends_on: [revisor]
+    approval:
+      required: true
+      timeout: 7200
+      notify:
+        - slack: "#content-review"
+    rules:
+      require_files: [article_final.md, revision_log.json]
+      on_approved:
+        action: commit_and_pr
+        pr_title: "content: add vector database comparison article"
+        base_branch: main
+        draft: true
+      on_rejected:
+        action: notify
+        message: "Steward: PR rejected. Reason: {{ .RejectionReason }}"
