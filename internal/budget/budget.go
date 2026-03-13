@@ -1,11 +1,9 @@
 package budget
- 
+
 import (
 	"fmt"
 	"sync/atomic"
 )
- 
-const claudeSonnet4TokenPriceUSDPer1M = 3.00
  
 type Config struct {
 	MaxTokens      int64

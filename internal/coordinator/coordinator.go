@@ -1,11 +1,24 @@
 package coordinator
 
-import "github.com/Subodh8/ClaudeFlux/internal/store"
-import "github.com/Subodh8/ClaudeFlux/internal/ipc"
-import "go.uber.org/zap"
+import (
+	"github.com/Subodh8/ClaudeFlux/internal/ipc"
+	"github.com/Subodh8/ClaudeFlux/internal/store"
+	"go.uber.org/zap"
+)
 
-type Options struct { Logger *zap.Logger; Store *store.Store; Broker *ipc.Broker }
+// Options configures the Coordinator.
+type Options struct {
+	Logger *zap.Logger
+	Store  *store.Store
+	Broker *ipc.Broker
+}
 
-type Coordinator struct{}
+// Coordinator routes messages between agents and manages approval gates.
+type Coordinator struct {
+	opts Options
+}
 
-func New(opts Options) (*Coordinator, error) { return &Coordinator{}, nil }
+// New creates a new Coordinator with the given options.
+func New(opts Options) (*Coordinator, error) {
+	return &Coordinator{opts: opts}, nil
+}

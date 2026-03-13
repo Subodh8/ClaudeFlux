@@ -1,6 +1,10 @@
 package dag
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Subodh8/ClaudeFlux/internal/config"
+)
 
 // DAG represents a directed acyclic graph of agent dependencies.
 type DAG struct {
@@ -13,36 +17,21 @@ type Node struct {
 	DependsOn []string
 }
 
-// AgentDef is the interface the DAG builder expects from agent configs.
-type AgentDef interface {
-	GetDependsOn() []string
-}
-
 // Build constructs a DAG from a map of agent configurations.
-// The agents parameter accepts map[string]AgentConfig where AgentConfig
-// has a DependsOn field.
-func Build(agents interface{}) (*DAG, error) {
+func Build(agents map[string]config.AgentConfig) (*DAG, error) {
 	d := &DAG{nodes: make(map[string]*Node)}
 
-	// Type-assert to the expected map type
-	agentMap, ok := agents.(map[string]interface{})
-	if !ok {
-		// Try with the config.AgentConfig type via reflection
-		return buildFromTypedMap(d, agents)
+	for name, agent := range agents {
+		d.nodes[name] = &Node{
+			Name:      name,
+			DependsOn: agent.DependsOn,
+		}
 	}
 
-	for name, agent := range agentMap {
-		_ = agent
-		d.nodes[name] = &Node{Name: name}
+	if err := d.Validate(); err != nil {
+		return nil, err
 	}
 
-	return d, nil
-}
-
-// buildFromTypedMap handles building from typed maps (e.g., map[string]config.AgentConfig)
-func buildFromTypedMap(d *DAG, agents interface{}) (*DAG, error) {
-	// Use reflect to handle map[string]config.AgentConfig
-	// For now, we handle the concrete type directly via the config package
 	return d, nil
 }
 

@@ -106,7 +106,3 @@ func Load(path string) (*Workflow, error) {
 	return &wf, nil
 }
 
-// GetDependsOn returns the dependency list for an agent config.
-func (a AgentConfig) GetDependsOn() []string {
-	return a.DependsOn
-}
