@@ -1,11 +1,12 @@
 module github.com/Subodh8/ClaudeFlux
 
-go 1.26.1
+go 1.23.1
 
 require (
 	github.com/google/uuid v1.6.0
 	github.com/spf13/cobra v1.10.2
 	go.uber.org/zap v1.27.1
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (

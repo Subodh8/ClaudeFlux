@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
  
-REPO="yourusername/claudeflux"
+REPO="Subodh8/ClaudeFlux"
 BINARY="claudeflux"
 INSTALL_DIR="${CLAUDEFLUX_INSTALL_DIR:-/usr/local/bin}"
  

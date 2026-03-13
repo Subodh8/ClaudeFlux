@@ -1,0 +1,10 @@
+import { DAGVisualization } from '../components/DAGVisualization';
+
+export default function DashboardPage() {
+    return (
+        <div>
+            <h1 className="text-2xl font-bold mb-6">Workflow DAG</h1>
+            <DAGVisualization />
+        </div>
+    );
+}

@@ -1,0 +1,52 @@
+# ClaudeFlux Example: Data Pipeline
+# ETL-style data processing with validation
+
+version: "1"
+name: data-pipeline
+description: >
+  Three-agent pipeline that extracts data from APIs,
+  transforms it, and validates the output.
+
+budget:
+  max_tokens: 80000
+  max_cost_usd: 1.50
+
+agents:
+  extractor:
+    type: worker
+    prompt: |
+      Extract data from the configured API endpoints.
+      Normalize responses into a unified JSON format.
+      Save raw data to: raw_data.json
+      Save extraction log to: extraction_log.json
+    budget:
+      max_tokens: 30000
+    timeout: 300
+
+  transformer:
+    type: worker
+    depends_on: [extractor]
+    prompt: |
+      Read raw_data.json.
+      Apply the following transformations:
+      1. Deduplicate records
+      2. Normalize date formats to ISO 8601
+      3. Validate required fields
+      4. Compute derived metrics
+      Save transformed data to: transformed_data.json
+    budget:
+      max_tokens: 30000
+
+  validator:
+    type: critic
+    depends_on: [transformer]
+    targets: [transformer]
+    prompt: |
+      Validate transformed_data.json:
+      1. Check for data integrity issues
+      2. Verify all required fields are present
+      3. Validate value ranges
+      4. Check for anomalies
+      Output validation report to: validation_report.json
+    budget:
+      max_tokens: 20000

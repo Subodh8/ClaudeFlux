@@ -1,0 +1,63 @@
+# ClaudeFlux Example: Adversarial Review
+# Red team / blue team review pattern
+
+version: "1"
+name: adversarial-review
+description: >
+  Four-agent pipeline with explicit adversarial review.
+  An author writes, a red-team critic attacks, the author revises,
+  then a steward decides.
+
+budget:
+  max_tokens: 120000
+  max_cost_usd: 2.50
+
+agents:
+  author:
+    type: worker
+    prompt: |
+      Write a comprehensive security policy document for a SaaS application.
+      Cover: authentication, authorization, data encryption, incident response,
+      compliance (SOC 2, GDPR), and audit logging.
+      Save to: security_policy.md
+    budget:
+      max_tokens: 40000
+
+  red_team:
+    type: critic
+    depends_on: [author]
+    targets: [author]
+    prompt: |
+      You are a penetration tester reviewing security_policy.md.
+      Find every gap, ambiguity, and weakness:
+      1. Missing threat vectors
+      2. Vague procedures that wouldn't survive an audit
+      3. Compliance gaps
+      4. Implementation risks
+      Be adversarial. Output structured critique to: red_team_report.json
+    budget:
+      max_tokens: 30000
+
+  author_v2:
+    type: worker
+    depends_on: [red_team]
+    prompt: |
+      Read security_policy.md and red_team_report.json.
+      Address every critical and major finding.
+      Mark revisions with <!-- REVISED: reason --> inline.
+      Save revised document to: security_policy_v2.md
+    budget:
+      max_tokens: 40000
+
+  steward:
+    type: steward
+    depends_on: [author_v2]
+    approval:
+      required: true
+      timeout: 7200
+    rules:
+      require_files: [security_policy_v2.md]
+      on_approved:
+        action: commit_and_pr
+        pr_title: "docs: add security policy"
+        draft: true

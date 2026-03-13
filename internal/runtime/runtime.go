@@ -241,18 +241,3 @@ func (r *Runtime) startDashboard(ctx context.Context, runID string) error {
 	return r.broker.StartDashboardServer(ctx, runID, r.opts.DashboardPort)
 }
 
-// Stubs for resolving compilation errors
-type WorkerPool struct{}
-type WorkerPoolOptions struct {
-	Logger      *zap.Logger
-	Budget      *budget.Tracker
-	Broker      *ipc.Broker
-	Coordinator *coordinator.Coordinator
-	DryRun      bool
-}
-
-func NewWorkerPool(opts WorkerPoolOptions) *WorkerPool { return &WorkerPool{} }
-func (w *WorkerPool) Acquire(ctx context.Context, cfg worker.Config) (*worker.Worker, error) {
-	return &worker.Worker{}, nil
-}
-func (w *WorkerPool) Release(worker *worker.Worker) {}

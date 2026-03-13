@@ -1,0 +1,62 @@
+# ClaudeFlux Example: Code Review Pipeline
+# Automated code review with researcher, reviewer, and fixer agents
+
+version: "1"
+name: code-review-pipeline
+description: >
+  Three-agent pipeline that analyzes a codebase for bugs,
+  reviews findings, and generates fix suggestions.
+
+budget:
+  max_tokens: 100000
+  max_cost_usd: 2.00
+  alert_at_percent: 80
+
+agents:
+  analyzer:
+    type: worker
+    prompt: |
+      Analyze the codebase for:
+      1. Common bug patterns
+      2. Security vulnerabilities
+      3. Performance anti-patterns
+      4. Code style violations
+
+      Output findings as structured JSON to: analysis.json
+    budget:
+      max_tokens: 40000
+
+  reviewer:
+    type: critic
+    depends_on: [analyzer]
+    targets: [analyzer]
+    prompt: |
+      Review analysis.json for false positives and missed issues.
+      Prioritize findings by severity (critical, major, minor).
+      Output reviewed findings to: reviewed_analysis.json
+    budget:
+      max_tokens: 30000
+
+  fixer:
+    type: worker
+    depends_on: [reviewer]
+    prompt: |
+      Read reviewed_analysis.json.
+      For each critical and major finding, generate a fix.
+      Save fixes to: fixes.patch
+      Save summary to: fix_summary.md
+    budget:
+      max_tokens: 30000
+
+  steward:
+    type: steward
+    depends_on: [fixer]
+    approval:
+      required: true
+      timeout: 3600
+    rules:
+      require_files: [fixes.patch, fix_summary.md]
+      on_approved:
+        action: commit_and_pr
+        pr_title: "fix: automated code review fixes"
+        draft: true

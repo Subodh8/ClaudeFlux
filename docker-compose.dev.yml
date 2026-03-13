@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  claudeflux:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: claudeflux-dev
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - CLAUDEFLUX_STATE_DIR=/data/state
+      - CLAUDEFLUX_LOG_LEVEL=debug
+    volumes:
+      - .:/workspace
+      - claudeflux-dev-data:/data/state
+    ports:
+      - "7070:7070"
+      - "7071:7071"
+    command: [ "run", "/workspace/examples/research-write-review/workflow.yaml", "--dashboard", "--log-level", "debug" ]
+
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: claudeflux-dashboard-dev
+    environment:
+      - NEXT_PUBLIC_CLAUDEFLUX_API=http://claudeflux:7071
+    ports:
+      - "3000:3000"
+    depends_on:
+      - claudeflux
+    volumes:
+      - ./dashboard/src:/app/src
+
+volumes:
+  claudeflux-dev-data:

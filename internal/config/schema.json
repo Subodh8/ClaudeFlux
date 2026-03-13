@@ -1,0 +1,176 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ClaudeFlux Workflow Configuration",
+    "type": "object",
+    "required": [
+        "version",
+        "name",
+        "agents"
+    ],
+    "properties": {
+        "version": {
+            "type": "string",
+            "description": "Schema version. Currently only '1' is supported.",
+            "enum": [
+                "1"
+            ]
+        },
+        "name": {
+            "type": "string",
+            "description": "Workflow name."
+        },
+        "description": {
+            "type": "string",
+            "description": "Optional workflow description."
+        },
+        "git": {
+            "type": "object",
+            "properties": {
+                "repo": {
+                    "type": "string",
+                    "default": "."
+                },
+                "base_branch": {
+                    "type": "string",
+                    "default": "main"
+                },
+                "worktree_prefix": {
+                    "type": "string",
+                    "default": "cf-"
+                }
+            }
+        },
+        "budget": {
+            "type": "object",
+            "properties": {
+                "max_tokens": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "max_cost_usd": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "alert_at_percent": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "default": 80
+                },
+                "on_exceeded": {
+                    "type": "string",
+                    "enum": [
+                        "checkpoint",
+                        "pause",
+                        "abort"
+                    ]
+                }
+            }
+        },
+        "contracts": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "http://json-schema.org/draft-07/schema#"
+            }
+        },
+        "agents": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "required": [
+                    "prompt"
+                ],
+                "properties": {
+                    "prompt": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "worker",
+                            "steward",
+                            "critic"
+                        ],
+                        "default": "worker"
+                    },
+                    "depends_on": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "budget": {
+                        "type": "object",
+                        "properties": {
+                            "max_tokens": {
+                                "type": "integer"
+                            },
+                            "max_cost_usd": {
+                                "type": "number"
+                            }
+                        }
+                    },
+                    "approval": {
+                        "type": "object",
+                        "properties": {
+                            "required": {
+                                "type": "boolean"
+                            },
+                            "timeout": {
+                                "type": "integer"
+                            },
+                            "notify": {
+                                "type": "array"
+                            }
+                        }
+                    },
+                    "contract": {
+                        "type": "object",
+                        "properties": {
+                            "input": {
+                                "type": "string"
+                            },
+                            "output": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "env": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": "string"
+                        }
+                    },
+                    "timeout": {
+                        "type": "integer"
+                    },
+                    "retry": {
+                        "type": "object",
+                        "properties": {
+                            "max_attempts": {
+                                "type": "integer",
+                                "default": 1
+                            },
+                            "backoff": {
+                                "type": "string",
+                                "enum": [
+                                    "linear",
+                                    "exponential"
+                                ]
+                            }
+                        }
+                    },
+                    "targets": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "rules": {
+                        "type": "object"
+                    }
+                }
+            }
+        }
+    }
+}
